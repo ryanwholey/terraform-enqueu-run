@@ -1,7 +1,7 @@
 name: Terraform Enqueue Run
 description: Action to enqueue Terraform runs
 inputs:
-  content-direcotry:
+  content-directory:
     description: Directory containing Terraform configuration to run
     default: ${{ github.workspace }}
   organization:
