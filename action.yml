@@ -30,12 +30,16 @@ runs:
         tar -zcvf "$UPLOAD_FILE_NAME" -C "${{ inputs.content-directory }}" .
 
         WORKSPACE_ID=($(curl \
+          --silet \
+          --show-error \
           --header "Authorization: Bearer ${{ inputs.tfe-token }}" \
           --header "Content-Type: application/vnd.api+json" \
           https://${{ inputs.host }}/api/v2/organizations/${{ inputs.organization }}/workspaces/${{ inputs.workspace }} \
           | jq -r '.data.id'))
 
         UPLOAD_URL=($(curl \
+          --silet \
+          --show-error \
           --header "Authorization: Bearer ${{ inputs.tfe-token }}" \
           --header "Content-Type: application/vnd.api+json" \
           --request POST \
@@ -44,6 +48,8 @@ runs:
           | jq -r '.data.attributes."upload-url"'))
         
         curl \
+          --silet \
+          --show-error \
           --header "Content-Type: application/octet-stream" \
           --request PUT \
           --data-binary @"$UPLOAD_FILE_NAME" \
