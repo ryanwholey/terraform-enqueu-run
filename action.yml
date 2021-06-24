@@ -35,13 +35,11 @@ runs:
           https://${{ inputs.host }}/api/v2/organizations/${{ inputs.organization }}/workspaces/${{ inputs.workspace }} \
           | jq -r '.data.id'))
 
-        echo '{"data":{"type":"configuration-versions"}}' > ./create_config_version.json
-
         UPLOAD_URL=($(curl \
           --header "Authorization: Bearer ${{ inputs.tfe-token }}" \
           --header "Content-Type: application/vnd.api+json" \
           --request POST \
-          --data @create_config_version.json \
+          --data '{"data":{"type":"configuration-versions"}}' \
           https://${{ inputs.host }}/api/v2/workspaces/$WORKSPACE_ID/configuration-versions \
           | jq -r '.data.attributes."upload-url"'))
         
@@ -50,11 +48,3 @@ runs:
           --request PUT \
           --data-binary @"$UPLOAD_FILE_NAME" \
           $UPLOAD_URL
-
-        ls
-        
-        rm "$UPLOAD_FILE_NAME"
-        rm ./create_config_version.json}
-
- 
- 
