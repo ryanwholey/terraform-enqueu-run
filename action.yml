@@ -23,6 +23,8 @@ runs:
     - name: Enqueue Run
       shell: bash
       run: |
+        set -x
+
         UPLOAD_FILE_NAME="./content-$(date +%s).tar.gz"
 
         tar -zcvf "$UPLOAD_FILE_NAME" -C "${{ inputs.content-directory }}" .
@@ -49,6 +51,8 @@ runs:
           --data-binary @"$UPLOAD_FILE_NAME" \
           $UPLOAD_URL
 
+        ls
+        
         rm "$UPLOAD_FILE_NAME"
         rm ./create_config_version.json}
 
