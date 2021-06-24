@@ -13,6 +13,9 @@ inputs:
     default: app.terraform.io
   tfe-token:
     description: Terraform token
+  plan-only:
+    description: Whether to the run is specualtive or whether the run can be queued for an apply
+    default: true
 runs:
   using: composite
   steps:
@@ -25,20 +28,26 @@ runs:
       run: |
         set -x
 
-        UPLOAD_FILE_NAME="./content-$(date +%s).tar.gz"
-
-        tar -zcvf "$UPLOAD_FILE_NAME" -C "${{ inputs.content-directory }}" .
-
         WORKSPACE_ID=($(curl \
-          --silet \
+          --silent \
           --show-error \
           --header "Authorization: Bearer ${{ inputs.tfe-token }}" \
           --header "Content-Type: application/vnd.api+json" \
           https://${{ inputs.host }}/api/v2/organizations/${{ inputs.organization }}/workspaces/${{ inputs.workspace }} \
           | jq -r '.data.id'))
 
+        cat <<EOF > config-version.json
+        {
+          "data": {
+            "type": "configuration-versions",
+            "attributes": {
+              "speculative": ${{ inputs.plan-only }}
+            }
+          }
+        }
+        EOF
         UPLOAD_URL=($(curl \
-          --silet \
+          --silent \
           --show-error \
           --header "Authorization: Bearer ${{ inputs.tfe-token }}" \
           --header "Content-Type: application/vnd.api+json" \
@@ -47,8 +56,13 @@ runs:
           https://${{ inputs.host }}/api/v2/workspaces/$WORKSPACE_ID/configuration-versions \
           | jq -r '.data.attributes."upload-url"'))
         
+
+        UPLOAD_FILE_NAME="./content-$(date +%s).tar.gz"
+        tar -zcv -f "$UPLOAD_FILE_NAME" \
+          -C "${{ inputs.content-directory }}" \
+          --exclude .git .
         curl \
-          --silet \
+          --silent \
           --show-error \
           --header "Content-Type: application/octet-stream" \
           --request PUT \
